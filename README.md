@@ -10,8 +10,4 @@
 - [QML相关](https://github.com/xluu233/Qt_interview_notes/blob/main/QML%E7%9B%B8%E5%85%B3.md)
 - [其他](https://github.com/xluu233/Qt_interview_notes/blob/main/Qt%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AE%B0.md)
 
-**以上是理论性笔记**
----
-**以下是实用性教程**
 
-待补充
