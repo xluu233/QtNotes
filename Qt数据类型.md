@@ -1,13 +1,12 @@
 
 ## Qt数据类型
 
-> 由于Qt特有的元对象系统，Qt维护了一套自己的数据结构，
+由于Qt特有的元对象系统，Qt维护了一套自己的数据结构，
 
-#### 基本数据类型
+### 基本类型
 
-| Col1 | Col2 | Col3 |
+| qt类型 | c++标准类型 | 备注 |
 | --- | --- | --- |
-类型名称 |	注释 |	备注
 qint8 |	signed char	 |有符号8位数据类型
 qint16|	signed short|	有符号16位数据类型
 qint32|	signed int|	有符号32位数据类型
@@ -27,86 +26,84 @@ uint|	unsigned int|	无符号整型
 ulong|	unsigned long|	无符号长整型
 ushort|	unsigned short	|无符号短整型
 
-#### 封装数据类型
+### 封装类型
 
-| Col1 | Col2 |
+| 类型 | 备注 |
 | --- | --- |
 | QByteArray  | 字节数组
-| QString | Unicode字符的字符串
-| QBuffer | QBuffer类是一个操作QByteArray的输入、输出设备的接口。
+| QString | Unicode字符的字符串，类似std::string
+| QStringList | 字符串视图，不直接对string操作，类似std::string_view
 | QVector | QVector是Qt对所有数组的封装，可变大小
-| QList |
-| QLinedList | 
-| QVector | 
-| QMap | key-value存储
-| QQHash |
-| QDateTime | Qt中的时间类
-| QVariant| QVariant变量是没有数据类型的，可以进行任意类型转换。
+| QList | 动态扩容的数组，类似std::vector
+| QVector | 动态数组，本身和QList区别很小，在qt6后和QList统一了，QVector的内部实现就是QList
+| QLinedList | 链表，qt6中去掉了, 建议使用std::list
+| QMap | 存储key-value键值对，内部使用平衡二叉树（红黑树）
+| QHash | 存储key-value键值对，内部使用哈希表
+| QBuffer | QBuffer类是一个操作QByteArray的输入、输出设备的接口。
+| QVariant | QVariant变量是没有数据类型的，可以进行任意类型转换。
 
-#### QByteArray和QString和char*之间区别
+### 关于Qt数据类型的一些疑惑
 
-**QByteArray**
+#### 1、QByteArray和QString和char*之间区别
 
-提供一个字节数组(序列),可用于存储原始字节（包括“\ 0” ）和传统的8位 “\ 0” 端接字符串 。使用QByteArray比使用const char更方便。在IO操作中，c语言常使用const char，而Qt中常使用QByteArray；
+- **QByteArray**：提供一个字节数组,可用于存储原始字节`byte`（包括“\ 0” ）和传统的8位 “\ 0” 端接字符串。使用QByteArray比使用char数组更方便。在IO操作中，c语言常使用`const char*`，而Qt中常使用QByteArray
 
 
-**QString**
+- **QString**：QString类提供了一个Unicode字符字符串，注意是Unicode字符的字符串。QByteArray与QString互转极为简单，二者从本质上类似，都是连续存储，区别是前者可以存无法显示的字符，后者只存可显示的字符
 
-QString类提供了一个Unicode字符字符串，注意是Unicode字符的字符串。QByteArray与QString互转极为简单，二者从本质上类似，都是连续存储，区别是前者可以存无法显示的字符，后者只存可显示的字符
 
-QByteArray转为QString示例：
+ - **char**：c/c++中的char类型原生数组
+
+
 
 ```
+//QByteArray转为QString示例：
 QByteArray ba("abc123"); 
 QString str = ba; //或str.prepend(ba); 
 qDebug()<<str ; //输出："abc123"
-```
 
-QString转为QByteArray示例：
-```
+
+//QString转为QByteArray示例：
 QString str("abc123"); 
 QByteArray ba = str.toLatin1(); 
 qDebug()<<ba; //输出："abc123"
 ```
 
-**char**
 
-c/c++中的char类型原生数组
+#### 2、QMap与QHash的差别
 
-
-
-#### QMap与QHash的差别
-
+- QMap和QHash都是存储键值对的数据结构，QMap是基于红黑树，QHash是基于hash表。
 - QHash具有比QMap更快的查找速度
 - QHash以任意的顺序存储数据项，而QMap总是按照键Key顺序存储数据
 - QHash的键类型Key必须提供operator==()和一个全局的qHash(Key)函数，而QMap的键类型Key必须提供
 
-#### QList和QLinkedList、QVector差别
+#### 3、QList和QVector差别
 
-> QVector对应标准库中的是std::vector， QLinkedList对应的std::list，QList在std中没有对应的容器。
+> 由于QT存在众多历史版本，在之前的时候c++标准库并不完善，QT的容器类也是一步一步完善的，所以QList和QVector之前存在很多历史渊源。
 
-- QVector是提供动态数组的一个模板类。
-- QLinkedList是基于链表的一个模板类。
-- QList比较特殊，在stl中没有对应的实现，和QVector的职责比较模糊，有类似索引访问的API，但是基于数组+链表实现。
+**网上很多版本说QList和QVector区别，各执己见，更有甚者说QList是一个链表，维护一个指针数组，指针指向存储的给定类型的值。还有说QList是一个特殊的数组，根据存储对象不同选择不同的方式。**
 
-**QList的效率问题：**
-> QList就像是一个vector和list的结合体一样。在对象占用内存大的时候（大于sizeof(void*)），它每次会从堆中分配内存。然后将内存的起始地址放入数组中。相对于QVector慢的原因是它每次都要经过堆分配内存，而QVector可以预分配内存从而提高push_back的运行效率。而对于小内存对象，他直接将其存储到数组中，这样不需要经过堆分配内存，所以相对于大内存QList本身也有很大的性能提升，但是由于它每次需要用到sizeof(void*)的内存，也会导致更多的内存分配，所以运行效率还是不如QVector。
+
+我们不讨论Qt4版本，仅以Qt5高版本和Qt6来看,在我的实际测试中，在Qt5.14版本
+
+- QList和QVector都是一个动态扩容的数组，
+- QList是不支持移动赋值，只有拷贝赋值。
+- QVector是支持移动赋值和拷贝赋值的。
+
+
+**在Qt官方介绍中，QVector效率是优于QList的：**
+
+QList就像是一个vector和list的结合体一样。在对象占用内存大的时候（大于sizeof(void*)），它每次会从堆中分配内存。然后将内存的起始地址放入数组中。对于小内存对象，他直接将其存储到数组中，这样不需要经过堆分配内存。
+
+相对于QVector慢的原因是它每次都要经过堆分配内存，而QVector可以预分配内存从而提高push_back的运行效率，所以相对于大内存QList本身也有很大的性能提升，但是由于它每次需要用到sizeof(void*)的内存，也会导致更多的内存分配，所以运行效率还是不如QVector。
 
 **QList的优点：**
-> 当对占用大内存对象进行重新排续的时候，QVector只能进行大量内存移动，而QList则只需要移动对象指针即可。相对于std::list，QList在单纯的push_back和枚举的时候也有不错的表现。
+当对占用大内存对象进行重新排续的时候，QVector只能进行大量内存移动，而QList则只需要移动对象指针即可。相对于std::list，QList在单纯的push_back和枚举的时候也有不错的表现。
 
 
-概况：
-1. 通常情况来说，QList是比较合适的选择，QList是基于索引访问（index-based）的API，它比QLinkedList {基于迭代器访问（iterator-based）的API}使用更加方便。由于QList在内存中存储items的方式，它通常比QVector 更快（例如prepend（）、insert（）等）。而且，它只需更少的代码。
+**Qt6中的QList变化**
 
-2. 如果你需要使用一个真正的链表，并且保证使用迭代器（iterator）而不是索引（index）实现快速插入（constant time），可以使用QLinkedList。
-
-3. 如果你需要items占据相邻内存空间，或者如果你的items比一个pointer更大并且你想要避免在插入时在堆上分配它们的话，可以使用QVector。
-
-#### QT6的QList变化
-
-**QVector和QList是统一的！**
-官方参考文档：https://www.qt.io/blog/qlist-changes-in-qt-6#commento
+**QVector和QList统一了，不在有选择困难症了，[参考文档](https://www.qt.io/blog/qlist-changes-in-qt-6#commento)**
 
 在此之前，Qt为这两个容器提供了非常不同的实现：QVector是一个自然而直观的类似数组的容器，而QList在其实现中非常特殊，以很好地适应Qt本身定义和使用的类型。通过对现有类型的Qt6更新，在以前版本中已经完成的工作的支持下，类之间的实现差异似乎没有什么好处。此外，在许多情况下，QVector被证明是一个更好的选择。
 
@@ -118,16 +115,34 @@ c/c++中的char类型原生数组
 - 与QStringList和QByteArrayList命名约定同步
 
 **新增特性：**
-- QList 可能会在元素移除时缩小
+- QList可能会在元素移除时缩小
 - QList的内存不受2GiB的限制
 
+#### 4、QLinkedList
 
-#### 特定数据模型
+`QLinkedList`是qt封装的链表数据类型，但是在QT6中被删除了，不知道为什么。
 
-Qt中的View主要有三种QListView，QTreeView, QTabelView
-对应的Model是：QStringListModel, QAbstractItemModel , QStandardItemModel。
+#### 5、QVariant
 
-#### Qt中的MVD
+QVariant是Qt中的一个通用的值容器，它可以存储任意类型的数据，例如整数、字符串、列表等等。
+
+```
+    // 存储数据
+    QVariant v1 = 10;  // 存储整数
+    QVariant v2 = "hello";  // 存储字符串
+    QVariant v3 = QList<int>() << 1 << 2 << 3;  // 存储整数列表
+
+    // 获取数据
+    int n = v1.toInt();  // 将整数转换为int类型
+    QString str = v2.toString();  // 将字符串转换为QString类型
+    QList<int> list = v3.toList();  // 将整数列表转换为QList<int>类型
+
+    qDebug() << "v1 = " << n;  // 输出整数
+    qDebug() << "v2 = " << str;  // 输出字符串
+    qDebug() << "v3 = " << list;  // 输出整数列表
+```
+
+### Qt中的MVD
 
 Qt的MVD包含三个部分Model（模型），View（视图），代理（Delegate）。
 - Model否则保存数据
@@ -136,89 +151,8 @@ Qt的MVD包含三个部分Model（模型），View（视图），代理（Delega
 
 这三部分通过信号槽来进行通信，当Model中数据发生变化时将会发送信号到View，在View中编辑数据时，Delegate负责将编辑状态发送给Model层。基类分别为QAbstractItemModel、QAbstractItemView、QAbstractItemDelegate。Qt中提供了默认实现的MVD类，如QTableWidget、QListWidget、QTreeWidget等。 
 
-
-#### STL标准容器库
-> 容器分类：
->
-> 1. 序列容器 sequence containers
->
->    - array
->    - vector
->    - deque
->    - list
->    - forward-list 
->
-> 2. 关联容器 associative containers
->
->    （红黑树实现）
->
->    - set
->    - multiset
->    - map
->    - multimap
->
->    (hash表实现）
->
->    - hash_set
->    - hash_multiset
->    - hash_map
->    - hash_multimap
->    
-> 3. 无序容器
->
->    - unordered_map
->    - unordered_multimap
->    - unordered_set
->    - unordered_multiset
-
-
-1. vector:底层数据结构为数组 ，支持快速随机访问。
-
-2. array：固定大小数组。支持快速随机访问，不能添加或者删除元素
-
-3. list:底层数据结构为双向链表，支持快速增删。
-
-4. forward_list:单向链表，只支持单向顺序访问
-
-5. deque:底层数据结构为一个中央控制器和多个缓冲区，支持首尾（中间不能）快速增删，也支持随机访问。
-
-4. stack:底层一般用23实现，封闭头部即可，不用vector的原因应该是容量大小有限制，扩容耗时
-
-5. queue:底层一般用23实现，封闭头部即可，不用vector的原因应该是容量大小有限制，扩容耗时（stack和queue其实是适配器,而不叫容器，因为是对容器的再封装）
-
-6. priority_queue:底层数据结构一般为vector为底层容器，堆heap为处理规则来管理底层容器实现
-
-7. set:底层数据结构为红黑树，有序，不重复。
-
-8. multiset:底层数据结构为红黑树，有序，可重复。 
-
-11. map:底层数据结构为红黑树，有序，不重复。
-
-10. multimap:底层数据结构为红黑树，有序，可重复。
-
-11.  hash_set:底层数据结构为hash表，无序，不重复。
-
-12. hash_multiset:底层数据结构为hash表，无序，可重复 。
-
-13. hash_map :底层数据结构为hash表，无序，不重复。
-
-14. hash_multimap:底层数据结构为hash表，无序，可重复。 
-
-15. 4种无序容器
-
-    | 无序容器           | 功能                                                         |
-    | ------------------ | ------------------------------------------------------------ |
-    | unordered_map      | 存储键值对 <key, value> 类型的元素，其中各个键值对键的值不允许重复，且该容器中存储的键值对是无序的。 |
-    | unordered_multimap | 和 unordered_map 唯一的区别在于，该容器允许存储多个键相同的键值对。 |
-    | unordered_set      | 不再以键值对的形式存储数据，而是直接存储数据元素本身（当然也可以理解为，该容器存储的全部都是键 key 和值 value 相等的键值对，正因为它们相等，因此只存储 value 即可）。另外，该容器存储的元素不能重复，且容器内部存储的元素也是无序的。 |
-    | unordered_multiset | 和 unordered_set 唯一的区别在于，该容器允许存储值相同的元素。 |
-
-18. 支持随机访问的容器：string,array,vector,deque
-
-    支持在任意位置插入/删除的容器：list,forward_list
-
-    支持在尾部插入元素：vector,string,deque
-
+Qt中的View主要有三种QListView，QTreeView, QTabelView
+对应的Model是：QStringListModel, QAbstractItemModel , QStandardItemModel。
 
 ### 智能指针
 
@@ -239,15 +173,12 @@ Qt的MVD包含三个部分Model（模型），View（视图），代理（Delega
 
 
 
-### 空指针，无效指针，野指针，垂悬指针
+### 空指针，野指针，垂悬指针，无效指针
 
-- 空指针，指针值为NULL
-- 无效指针，指针指向内存的类型为`void*`,是一种特殊类型指针
-- 野指针，指针未初始化地址
-- 垂悬指针，指向已删除（或释放）的内存位置的指针称为悬空指针
-
-
-
+- **空指针**：指针值为`NULL` `nullptr` `0`
+- **野指针**：指针未初始化地址
+- **垂悬指针**：指向已删除（或释放）的内存位置的指针称为悬空指针
+- **无效指针**：指针指向内存的类型为`void*`,是一种特殊类型指针
 
 ### Qt的D指针（`d_ptr`）与Q指针（`q_ptr`）
 
