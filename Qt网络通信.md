@@ -1,4 +1,4 @@
-### Qt网络编程
+### 1、Qt网络编程
 
 首先需要在.pro中添加`network`模块
 
@@ -19,7 +19,7 @@
 #include <QUdpSocket>
 ```
 
-### 描述UDP 之 UdpSocket通讯
+### 2、描述UDP 之 UdpSocket通讯
 
 UDP（User Datagram Protocol即用户数据报协议）是一个轻量级的，不可靠的，面向数据报的无连接协议。在网络质量令人十分不满意的环境下，UDP协议数据包丢失严重。由于UDP的特性：它不属于连接型协议，因而具有资源消耗小，处理速度快的优点，所以通常音频、视频和普通数据在传送时使用UDP较多，因为它们即使偶尔丢失一两个数据包，也不会对接收结果产生太大影响。所以QQ这种对保密要求并不太高的聊天程序就是使用的UDP协议。
 
@@ -31,7 +31,7 @@ UDP（User Datagram Protocol即用户数据报协议）是一个轻量级的，�
 ③发送数据用writeDatagram，接收数据用 readDatagram 。 
 
 
-### TCP通信
+### 3、TCP通信
 
 **服务端：（QTcpServer）**
 ①创建QTcpServer对象
@@ -80,7 +80,7 @@ UDP（User Datagram Protocol即用户数据报协议）是一个轻量级的，�
 
 
 
-### Qt Socket通信的过程
+### 4、Qt Socket通信的过程
 
 Qt Socket通信的过程主要分为以下几步：
 
@@ -149,3 +149,18 @@ data()是将QByteArray转为指向char类型的指针，
 QString()构造函数可以把char[]转为QString，
 QString::number类公有函数把int转为QString。
 ```
+
+### 5、Qt实现FTP文件上传和下载
+
+QT已经封装了QNetworkAccessManager类来实现ftp协议，只需要简单的配置url/用户名/密码即可实现。
+
+参考：
+- [Qt之QNetworkAccessManager 实现FTP文件上传/下载功能](https://blog.csdn.net/ilson_/article/details/97829233)
+
+
+### 6、Qt实现消息队列
+
+- [Qt实现消息队列](http://www.cleartechfei.com/2019/03/qttaskqueue/)
+- 
+
+

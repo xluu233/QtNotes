@@ -153,6 +153,8 @@ Qt的MVD包含三个部分Model（模型），View（视图），代理（Delega
 
 Qt中的View主要有三种QListView，QTreeView, QTabelView
 对应的Model是：QStringListModel, QAbstractItemModel , QStandardItemModel。
+### 标准库数据类型
+![image](https://github.com/xluu233/QtNotes/blob/main/src/stl.png)
 
 ### 智能指针
 
